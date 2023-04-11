@@ -32,7 +32,6 @@ exports.signup = async (req, res) => {
                             await User.create({
                                 name: name, email: email, password: hashPassword, account_info: { status: "Active" }
                             });
-                            // console.log("hgdagdga", user)
                             return res.status(200).json({ responseMessage: "Registered Successfully", responseData: {}, });
                         })
                     } else {
@@ -55,7 +54,6 @@ exports.signup = async (req, res) => {
 
 exports.login = async (req, res) => {
     try {
-
         const rules = { email: "required", password: "required" };
         var validation = new Validator(req.body, rules);
         if (validation.fails()) {
@@ -109,7 +107,6 @@ exports.login = async (req, res) => {
 
 exports.forgotPassword = async (req, res) => {
     try {
-
         const rules = { email: "required" }
         var validation = new Validator(req.body, rules);
         if (validation.fails()) {
@@ -118,20 +115,17 @@ exports.forgotPassword = async (req, res) => {
             const { email } = req.body;
             let user = await User.findOne({ email: email }).lean();
             if (user) {
-                // console.log('testtt', user.email)
-                // if (user.account_info.status == "Active") {
                 let otp = Math.floor(Math.random() * 9000) + 1000;
                 var date = new Date();
-                var expire = new Date(date.getTime() + 1 * 60000);
+                var expire = new Date(date.getTime() + 5 * 60000);
                 let data = { auth: { otp: otp, expire: new Date(expire), created: date } };
-                // console.log("otp", otp)
                 const transporter = nodemailer.createTransport({
                     host: 'smtp.gmail.com',
                     port: 465,
                     secure: true,
                     auth: {
                         user: 'htyagistaple246@gmail.com',
-                        pass: 'ayliuwksnufgrobk'
+                        pass: 'itrkewxqlnkamhej'
                     }
                 });
                 let info = await transporter.sendMail({
@@ -149,15 +143,11 @@ exports.forgotPassword = async (req, res) => {
                 } else {
                     return res.status(400).json({ responseMessage: "Data not updating ", responseData: {}, });
                 }
-                // } else {
-                //     return res.status(400).json({ responseMessage: "Account is not Active!", responseData: {}, });
-                // }
             } else {
                 return res.status(400).json({ responseMessage: "User Not Found", responseData: {}, });
             }
         }
     } catch (err) {
-        // console.log("133 = ", JSON.stringify(err));
         return res.status(500).json({ responseMessage: "Internal Server Error", responseData: {}, })
     }
 
@@ -166,19 +156,9 @@ exports.forgotPassword = async (req, res) => {
 exports.sendMail = async (req, res,) => {
 
     await nodemailer.createTestAccount();
-    // await nodemailer.createTestAccount((err,) => {
-    //     if (err) {
-    //         console.error('Failed to create a testing account. ' + err.message);
-    //         return process.exit(1);
-    //     }
-
-    //     console.log('Credentials obtained, sending message...');
-    // });
     let user = await User.findById(req.user._id).lean();
     let useremail = user.email
-    console.log("teeee", useremail)
     let otp = user.auth.otp
-    console.log("dhjhfjh", otp)
     // connect with the smtp
     const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
@@ -197,9 +177,8 @@ exports.sendMail = async (req, res,) => {
         // html: "<b>Hello YT Thapa</b>", // html body
 
     });
-    console.log("tetsmail", JSON.stringify(info))
     if (info.messageId) {
-        // console.log('dsfsfd', info)
+
         return res.status(200).json({ responseMessage: "mail has send", responseData: { info: info.messageId } });
     } else {
 
@@ -209,43 +188,36 @@ exports.sendMail = async (req, res,) => {
 };
 
 exports.otpVerification = async (req, res) => {
-    // try {
+    console.log('otp frontend', req.body)
+    try {
     const rules = { email: "required", otp: "required" }
     var validation = new Validator(req.body, rules);
     if (validation.fails()) {
         return res.status(422).json({ responseMessage: "Validation Error", responseData: validation.errors.all(), })
     } else {
         const { email, otp } = req.body;
-        // console.log("otp", otp)
         let user = await User.findOne({ email: email }).lean();
-        // console.log("email", user._id)  
         if (user) {
-            let checkOtp = await User.findOne({ email: email, 'auth.otp': otp, "auth.expire": { $gt: new Date() } }).lean();
+            let checkOtp = await User.findOne({ email: user.email, 'auth.otp': otp, "auth.expire": { $gte: new Date() } }).lean();////"auth.expire": { $gt: new Date() }
             // console.log("checkotp", checkOtp)
             if (checkOtp) {
                 let data = { auth: { otp: null, expire: null, created: null } };
-                // if (user.account_info.status == "Active") {
-                let updateData = await User.findOneAndUpdate({ _id: user._id }, { $set: data }, { new: true });
+                let updateData = await User.findOneAndUpdate({ email: user.email }, { $set: data }, { new: true });
                 if (updateData) {
-                    return res.status(200).json({ responseMessage: "OTP Verified successfully", responseData: { data: user }, });
+                    return res.status(200).json({ responseMessage: "OTP Verified successfully", responseData: {}, });
                 } else {
                     return res.status(400).json({ responseMessage: "Data not Updating", responseData: {}, });
                 }
-
-                // } else {
-                //     return res.status(400).json({ responseMessage: "Account is not Active!", responseData: {}, });
-                // }
             } else {
-                return res.status(400).json({ responseMessage: "Otp Invalid or Expired", responseData: {}, });
+                return res.status(422).json({ responseMessage: "Otp Invalid or Expired", responseData: {}, });
             }
         } else {
             return res.status(400).json({ responseMessage: "User Not Found", responseData: {}, });
         }
     }
-    // } catch (err) {
-    //     // console.log("133 = ", JSON.stringify(err));
-    //     return res.status(500).json({ responseMessage: "Internal Server Error", responseData: {}, })
-    // }
+    } catch (err) {
+        return res.status(500).json({ responseMessage: "Internal Server Error", responseData: {}, })
+    }
 };
 
 exports.resetPassword = async (req, res) => {
@@ -262,9 +234,7 @@ exports.resetPassword = async (req, res) => {
             } else {
                 let user = await User.findById(req.user._id).lean();
                 if (user) {
-                    // if (user.account_info.status == "Active") {
                     let newhash = bcrypt.hashSync(password, 10);
-
                     if (!newhash) {
                         return res.status(422).json({ responseMessage: "Error Occured while generating hash!", responseData: {}, });
                     } else {
@@ -282,7 +252,7 @@ exports.resetPassword = async (req, res) => {
                 };
             }
         } else {
-            return res.status(400).json({ responseMessage: "pasword should be minimum 8 Digites", responseData: {}, });
+            return res.status(400).json({ responseMessage: "Password should be minimum 8 Digites", responseData: {}, });
         }
     } catch (err) {
         return res.status(500).json({ responseMessage: "Internal Server Error", responseData: {}, })

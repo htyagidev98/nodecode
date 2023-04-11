@@ -7,13 +7,10 @@ const express = require("express"),
 require("dotenv").config();
 
 // Database Connectivity
-
-
-
 var connectWithRetry = function () {
-    return mongoose.connect(`${process.env.databaseURL}`
+    return mongoose.connect(`${process.env.databaseURL}`,
+        console.log("Db connected")
     );
-
 };
 connectWithRetry();
 

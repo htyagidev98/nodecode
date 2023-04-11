@@ -23,11 +23,14 @@ const AuthSchema = new Schema({
     },
     expire: {
         type: Date,
-        default: new Date()
+        default: new Date(),
+        // expires: '5m'
     },
     created: {
         type: Date,
-        default: new Date()
+        default: new Date(),
+        // expires: '5m'
+
     },
 });
 
