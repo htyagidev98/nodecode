@@ -7,9 +7,9 @@ const express = require("express"),
 require("dotenv").config();
 
 // Database Connectivity
-var connectWithRetry = function () {
+var connectWithRetry = () => {
     return mongoose.connect(`${process.env.databaseURL}`,
-        console.log("Db connected")
+        console.log("Db Connected")
     );
 };
 connectWithRetry();
@@ -30,6 +30,7 @@ app.use(compression());
 
 app.use("/", require("./routes/auth"));
 app.use("/contact", require("./routes/contact"));
+app.use("/category", require("./routes/category"));
 
 // Server Listining
 

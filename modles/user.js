@@ -1,9 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema
-// Validator = require("validatorjs")
-const validator = require('validator');
+// const validator = require('validator');
 
-// var uniqueValidator = require("mongoose-unique-validator");
 
 var DeviceInfoSchema = new Schema({
 
@@ -76,7 +74,6 @@ const UserSchema = new Schema({
 
 UserSchema.set("toObject", { Virtual: true });
 UserSchema.set("toJSON", { Virtual: true });
-//UserSchema.plugin(uniqueValidator);
 
 const User = mongoose.model("User", UserSchema, "User");
 module.exports = User;

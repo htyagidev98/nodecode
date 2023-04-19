@@ -14,14 +14,12 @@ exports.signup = async (req, res) => {
     try {
         const rules = { name: "required", email: "required", password: "required" };
         const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        // const passwordRegex = /^.{8,15}$/;
         var validation = new Validator(req.body, rules);
         if (validation.fails()) {
             return res.status(422).json({ responseMessage: "Validation Error", responseData: validation.errors.all(), });
         } else {
             const { name, email, password } = req.body;
             if (regex.test(req.body.email)) {
-                // if (passwordRegex.test(req.body.password)) {
                 if (req.body.password.length >= 8) {
                     let checkEmail = await User.findOne({ email: email }).lean();
                     if (!checkEmail) {
@@ -43,9 +41,7 @@ exports.signup = async (req, res) => {
 
             } else {
                 return res.status(422).json({ responseMessage: "Invalid email address ", responseData: {}, });
-
             }
-
         }
     } catch (err) {
         return res.status(500).json({ responseMessage: "Internal Server Error", responseData: {}, })
@@ -190,31 +186,30 @@ exports.sendMail = async (req, res,) => {
 exports.otpVerification = async (req, res) => {
     console.log('otp frontend', req.body)
     try {
-    const rules = { email: "required", otp: "required" }
-    var validation = new Validator(req.body, rules);
-    if (validation.fails()) {
-        return res.status(422).json({ responseMessage: "Validation Error", responseData: validation.errors.all(), })
-    } else {
-        const { email, otp } = req.body;
-        let user = await User.findOne({ email: email }).lean();
-        if (user) {
-            let checkOtp = await User.findOne({ email: user.email, 'auth.otp': otp, "auth.expire": { $gte: new Date() } }).lean();////"auth.expire": { $gt: new Date() }
-            // console.log("checkotp", checkOtp)
-            if (checkOtp) {
-                let data = { auth: { otp: null, expire: null, created: null } };
-                let updateData = await User.findOneAndUpdate({ email: user.email }, { $set: data }, { new: true });
-                if (updateData) {
-                    return res.status(200).json({ responseMessage: "OTP Verified successfully", responseData: {}, });
+        const rules = { email: "required", otp: "required" }
+        var validation = new Validator(req.body, rules);
+        if (validation.fails()) {
+            return res.status(422).json({ responseMessage: "Validation Error", responseData: validation.errors.all(), })
+        } else {
+            const { email, otp } = req.body;
+            let user = await User.findOne({ email: email }).lean();
+            if (user) {
+                let checkOtp = await User.findOne({ email: user.email, 'auth.otp': otp, "auth.expire": { $gte: new Date() } }).lean();////"auth.expire": { $gt: new Date() }
+                if (checkOtp) {
+                    let data = { auth: { otp: null, expire: null, created: null } };
+                    let updateData = await User.findOneAndUpdate({ email: user.email }, { $set: data }, { new: true });
+                    if (updateData) {
+                        return res.status(200).json({ responseMessage: "OTP Verified successfully", responseData: {}, });
+                    } else {
+                        return res.status(400).json({ responseMessage: "Data not Updating", responseData: {}, });
+                    }
                 } else {
-                    return res.status(400).json({ responseMessage: "Data not Updating", responseData: {}, });
+                    return res.status(422).json({ responseMessage: "Otp Invalid or Expired", responseData: {}, });
                 }
             } else {
-                return res.status(422).json({ responseMessage: "Otp Invalid or Expired", responseData: {}, });
+                return res.status(400).json({ responseMessage: "User Not Found", responseData: {}, });
             }
-        } else {
-            return res.status(400).json({ responseMessage: "User Not Found", responseData: {}, });
         }
-    }
     } catch (err) {
         return res.status(500).json({ responseMessage: "Internal Server Error", responseData: {}, })
     }

@@ -1,61 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-// const ContactSchema = new Schema({
-//     name: String,
-//     email: String,
-//     phone: String
-// });
-
-// const TableSchema = new Schema({
-//     name: String,
-//     contacts: [ContactSchema]
-// });
-
-// const CategorySchema = new Schema({
-//     name: String,
-//     tables: [TableSchema]
-// });
-
-// const ContactsSchema = new Schema({
-//     category: String,
-//     categories: [CategorySchema]
-// },
-//     { timestamps: true, toJSON: true },
-// );
 const ContactSchema = new Schema({
-    fname: {
-        type: String,
-        required: true,
-        default: ""
-    },
-    uname: {
-        type: String,
-        required: true,
-        // unique: true,
-        default: ""
-    },
-    birthday: {
-        type: Date,
-        required: true,
-        default: ""
-    },
-    occupation: {
-        type: String,
-        required: true,
-        default: ""
-    },
-    location: {
-        type: String,
-        required: true,
-        default: ""
-    },
-    reminder: {
-        type: String,
-        required: true,
-        default: ""
-    },
-    company: {
+    people: {
         type: String,
         required: true,
         default: ""
@@ -65,16 +12,32 @@ const ContactSchema = new Schema({
         required: true,
         default: ""
     },
-    textarea: {
+    location: {
         type: String,
         required: true,
         default: ""
+    },
+    job: {
+        type: String,
+        required: true,
+        default: ""
+    },
+    company: {
+        type: String,
+        required: true,
+        default: ""
+    },
+    phone: {
+        type: String,
+        trim: true,
+        min: 10,
+        maxlength: 14,
+    },
+    category:{
+        type:String,
+        required:true,
+        defalut:""
     }
-    // tag: [{
-    //     type: String,
-    //     required: true,
-    //     default: ""
-    // }],
 },
     { timestamps: true, toJSON: true },
 );
